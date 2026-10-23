@@ -1,0 +1,51 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #0F2A5C;
+  --color-ink-2: #1B3F86;
+  --color-night: #0A1C40;
+  --color-paper: #EEF3F9;
+  --color-signal: #FFC72C;
+  --color-maroon: #8C1D2C;
+  --color-track: #1F8A5B;
+  --color-steel: #5B6B84;
+  --color-line: #D3DDEA;
+  --font-display: "Barlow Condensed", "Arial Narrow", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Barlow", ui-sans-serif, system-ui, sans-serif;
+}
+
+html { background: var(--color-paper); }
+body { font-family: var(--font-sans); color: #13213f; background: var(--color-paper); }
+:focus-visible { outline: 3px solid var(--color-signal); outline-offset: 2px; }
+
+/* Ticket: stub is separated by a perforation with two punched notches */
+.ticket {
+  position: relative; overflow: hidden; display: grid; grid-template-columns: 1fr auto;
+  background: #fff; border-radius: 16px;
+  box-shadow: 0 0 0 1px var(--color-line), 0 18px 30px -22px rgba(15, 42, 92, .55);
+}
+.ticket-stub { position: relative; border-left: 2px dashed var(--color-line); }
+.ticket-stub::before, .ticket-stub::after {
+  content: ""; position: absolute; left: -11px; width: 20px; height: 20px; border-radius: 50%;
+  background: var(--color-paper); box-shadow: inset 0 0 0 1px var(--color-line);
+}
+.ticket-stub::before { top: -10px; }
+.ticket-stub::after { bottom: -10px; }
+@media (max-width: 640px) {
+  .ticket { grid-template-columns: 1fr; }
+  .ticket-stub { border-left: 0; border-top: 2px dashed var(--color-line); }
+  .ticket-stub::before, .ticket-stub::after { top: -11px; bottom: auto; }
+  .ticket-stub::before { left: -10px; }
+  .ticket-stub::after { left: auto; right: -10px; }
+}
+
+/* The one orchestrated moment: the train rolls into the station on load */
+@keyframes roll { from { transform: translateX(-900px); } to { transform: translateX(0); } }
+.train { animation: roll 3.6s cubic-bezier(.12, .75, .2, 1) both; }
+@keyframes pulse-ring { 0% { r: 7; opacity: .7; } 100% { r: 17; opacity: 0; } }
+.pulse-ring { animation: pulse-ring 1.8s ease-out infinite; }
+@keyframes stamp { from { transform: rotate(-6deg) scale(1.6); opacity: 0; } to { transform: rotate(-6deg) scale(1); opacity: 1; } }
+.stamp { animation: stamp .35s cubic-bezier(.2, .9, .3, 1.2) both; }
+@media (prefers-reduced-motion: reduce) {
+  .train, .pulse-ring, .stamp { animation: none; }
+}

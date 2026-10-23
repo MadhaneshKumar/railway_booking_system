@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>3.3.5</version>
+    <relativePath/>
+  </parent>
+
+  <groupId>com.railway</groupId>
+  <artifactId>railway-booking-system</artifactId>
+  <version>1.0.0</version>
+
+  <properties>
+    <java.version>17</java.version>
+    <cxf.version>4.0.5</cxf.version>
+  </properties>
+
+  <dependencies>
+    <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-web</artifactId></dependency>
+    <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-data-mongodb</artifactId></dependency>
+    <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-data-redis</artifactId></dependency>
+    <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-actuator</artifactId></dependency>
+
+    <!-- SOAP -->
+    <dependency><groupId>org.apache.cxf</groupId><artifactId>cxf-spring-boot-starter-jaxws</artifactId><version>${cxf.version}</version></dependency>
+
+    <!-- Stripe -->
+    <dependency><groupId>com.stripe</groupId><artifactId>stripe-java</artifactId><version>26.13.0</version></dependency>
+
+    <!-- Azure -->
+    <dependency><groupId>com.azure</groupId><artifactId>azure-storage-blob</artifactId><version>12.27.0</version></dependency>
+    <dependency><groupId>com.azure</groupId><artifactId>azure-communication-sms</artifactId><version>1.1.28</version></dependency>
+    <dependency><groupId>com.azure</groupId><artifactId>azure-communication-email</artifactId><version>1.0.12</version></dependency>
+    <dependency><groupId>com.azure</groupId><artifactId>azure-security-keyvault-secrets</artifactId><version>4.8.5</version></dependency>
+    <dependency><groupId>com.azure</groupId><artifactId>azure-identity</artifactId><version>1.13.3</version></dependency>
+
+    <!-- PDF (iText 8) -->
+    <dependency><groupId>com.itextpdf</groupId><artifactId>itext-core</artifactId><version>8.0.5</version><type>pom</type></dependency>
+
+    <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-test</artifactId><scope>test</scope></dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+      </plugin>
+
+      <!-- WSDL-first: generate Java from the WSDL -->
+      <plugin>
+        <groupId>org.apache.cxf</groupId>
+        <artifactId>cxf-codegen-plugin</artifactId>
+        <version>${cxf.version}</version>
+        <executions>
+          <execution>
+            <id>generate-sources</id>
+            <phase>generate-sources</phase>
+            <configuration>
+              <sourceRoot>${project.build.directory}/generated-sources/cxf</sourceRoot>
+              <wsdlOptions>
+                <wsdlOption>
+                  <wsdl>${basedir}/src/main/resources/wsdl/booking.wsdl</wsdl>
+                  <extraargs>
+                    <extraarg>-p</extraarg><extraarg>com.railway.ws</extraarg>
+                    <extraarg>-wsdlLocation</extraarg><extraarg>classpath:wsdl/booking.wsdl</extraarg>
+                  </extraargs>
+                </wsdlOption>
+              </wsdlOptions>
+            </configuration>
+            <goals><goal>wsdl2java</goal></goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

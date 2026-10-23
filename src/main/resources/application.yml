@@ -1,0 +1,38 @@
+server:
+  port: 8080
+cxf:
+  path: /ws
+spring:
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/railway}
+      auto-index-creation: true
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      ssl:
+        enabled: ${REDIS_SSL:false}      # Azure Redis: port 6380 + ssl true
+auth:
+  token-secret: ${AUTH_TOKEN_SECRET:}     # 32+ characters; required with the prod profile
+  token-ttl-minutes: ${AUTH_TOKEN_TTL_MINUTES:480}
+stripe:
+  secret-key: ${STRIPE_SECRET_KEY:}
+  webhook-secret: ${STRIPE_WEBHOOK_SECRET:}
+azure:
+  storage:
+    connection-string: ${AZURE_STORAGE_CONNECTION_STRING:UseDevelopmentStorage=true}
+    container: railway-docs
+  maps:
+    key: ${AZURE_MAPS_KEY:}
+  keyvault:
+    uri: ${KEYVAULT_URI:}
+acs:
+  connection-string: ${ACS_CONNECTION_STRING:}
+  sms-from: ${ACS_SMS_FROM:}
+  email-from: ${ACS_EMAIL_FROM:}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

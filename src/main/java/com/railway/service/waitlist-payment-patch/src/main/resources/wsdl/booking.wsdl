@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions name="RailwayService"
+    targetNamespace="http://railway.example.com/booking"
+    xmlns:tns="http://railway.example.com/booking"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
+
+  <wsdl:types>
+    <xs:schema targetNamespace="http://railway.example.com/booking" elementFormDefault="qualified">
+
+      <!-- shared types -->
+      <xs:complexType name="Passenger"><xs:sequence>
+        <xs:element name="name" type="xs:string"/>
+        <xs:element name="age" type="xs:int"/>
+        <xs:element name="gender" type="xs:string"/>
+        <xs:element name="preferredBerth" type="xs:string" minOccurs="0"/>
+      </xs:sequence></xs:complexType>
+      <xs:complexType name="SeatAssignment"><xs:sequence>
+        <xs:element name="passengerName" type="xs:string"/>
+        <xs:element name="coach" type="xs:string"/>
+        <xs:element name="seatNumber" type="xs:int"/>
+      </xs:sequence></xs:complexType>
+      <xs:complexType name="TrainInfo"><xs:sequence>
+        <xs:element name="trainNumber" type="xs:string"/>
+        <xs:element name="trainName" type="xs:string"/>
+        <xs:element name="departureTime" type="xs:string"/>
+        <xs:element name="arrivalTime" type="xs:string"/>
+        <xs:element name="availableClasses" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence></xs:complexType>
+      <xs:complexType name="FoodItem"><xs:sequence>
+        <xs:element name="itemId" type="xs:string"/>
+        <xs:element name="quantity" type="xs:int"/>
+      </xs:sequence></xs:complexType>
+      <xs:complexType name="Station"><xs:sequence>
+        <xs:element name="code" type="xs:string"/>
+        <xs:element name="arrivalTime" type="xs:string"/>
+        <xs:element name="departureTime" type="xs:string"/>
+      </xs:sequence></xs:complexType>
+
+      <!-- fault -->
+      <xs:element name="BookingFault"><xs:complexType><xs:sequence>
+        <xs:element name="code" type="xs:string"/>
+        <xs:element name="message" type="xs:string"/>
+      </xs:sequence></xs:complexType></xs:element>
+
+      <!-- train operations -->
+      <xs:element name="SearchTrainsRequest"><xs:complexType><xs:sequence>
+        <xs:element name="source" type="xs:string"/><xs:element name="destination" type="xs:string"/><xs:element name="travelDate" type="xs:string"/>
+      </xs:sequence></xs:complexType></xs:element>
+      <xs:element name="SearchTrainsResponse"><xs:complexType><xs:sequence>
+        <xs:element name="trains" type="tns:TrainInfo" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence></xs:complexType></xs:element>
+
+      <xs:element name="CheckSeatAvailabilityRequest"><xs:complexType><xs:sequence>
+        <xs:element name="trainNumber" type="xs:string"/><xs:element name="travelDate" type="xs:string"/><xs:element name="travelClass" type="xs:string"/>
+      </xs:sequence></xs:complexType></xs:element>
+      <xs:element name="CheckSeatAvailabilityResponse"><xs:complexType><xs:sequence>
+        <xs:element name="availableSeats" type="xs:int"/><xs:element name="waitlistCount" type="xs:int"/>
+      </xs:sequence></xs:complexType></xs:element>
+
+      <!-- booking -->
+      <xs:element name="BookTicketRequest"><xs:complexType><xs:sequence>
+        <xs:element name="trainNumber" type="xs:string"/><xs:element name="travelDate" type="xs:string"/>
+        <xs:element name="travelClass" type="xs:string"/><xs:element name="quotaType" type="xs:string"/>
+        <xs:element name="passengers" type="tns:Passenger" minOccurs="1" maxOccurs="6"/>
+        <xs:element name="userId" type="xs:string"/>
+      </xs:sequence></xs:complexType></xs:element>
+      <xs:element name="BookTicketResponse"><xs:complexType><xs:sequence>
+        <xs:element name="pnr" type="xs:string"/><xs:element name="bookingStatus" type="xs:string"/>
+        <xs:element name="seatAssignments" type="tns:SeatAssignment" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element name="paymentClientSecret" type="xs:string" minOccurs="0"/>
+      </xs:sequence></xs:complexType></xs:element>
+
+      <xs:element name="CancelTicketRequest"><xs:complexType><xs:sequence><xs:element name="pnr" type="xs:string"/></xs:sequence></xs:complexType></xs:element>
+      <xs:element name="CancelTicketResponse"><xs:complexType><xs:sequence>
+        <xs:element name="pnr" type="xs:string"/><xs:element name="status" type="xs:string"/><xs:element name="refundAmount" type="xs:double"/>
+      </xs:sequence></xs:complexType></xs:element>
+
+      <xs:element name="GetPNRStatusRequest"><xs:complexType><xs:sequence><xs:element name="pnr" type="xs:string"/></xs:sequence></xs:complexType></xs:element>
+      <xs:element name="GetPNRStatusResponse"><xs:complexType><xs:sequence>
+        <xs:element name="pnr" type="xs:string"/><xs:element name="bookingStatus" type="xs:string"/>
+        <xs:element name="trainNumber" type="xs:string"/><xs:element name="travelDate" type="xs:string"/>
+        <xs:element name="ticketDownloadUrl" type="xs:string" minOccurs="0"/>
+        <xs:element name="holdExpiresAt" type="xs:string" minOccurs="0"/>
+      </xs:sequence></xs:complexType></xs:element>
+
+      <!-- refunds / reschedule -->
+      <xs:element name="GetRefundDetailsRequest"><xs:complexType><xs:sequence><xs:element name="pnr" type="xs:string"/></xs:sequence></xs:complexType></xs:element>
+      <xs:element name="GetRefundDetailsResponse"><xs:complexType><xs:sequence>
+        <xs:element name="refundableAmount" type="xs:double"/><xs:element name="cancellationCharges" type="xs:double"/>
+      </xs:sequence></xs:complexType></xs:element>
+
+      <xs:element name="RescheduleTicketRequest"><xs:complexType><xs:sequence>
+        <xs:element name="pnr" type="xs:string"/><xs:element name="newTravelDate" type="xs:string"/>
+      </xs:sequence></xs:complexType></xs:element>
+      <xs:element name="RescheduleTicketResponse"><xs:complexType><xs:sequence>
+        <xs:element name="newPnr" type="xs:string"/><xs:element name="status" type="xs:string"/>
+      </xs:sequence></xs:complexType></xs:element>
+
+      <!-- food -->
+      <xs:element name="OrderFoodRequest"><xs:complexType><xs:sequence>
+        <xs:element name="pnr" type="xs:string"/><xs:element name="stationCode" type="xs:string"/>
+        <xs:element name="foodItems" type="tns:FoodItem" maxOccurs="unbounded"/>
+      </xs:sequence></xs:complexType></xs:element>
+      <xs:element name="OrderFoodResponse"><xs:complexType><xs:sequence>
+        <xs:element name="orderId" type="xs:string"/><xs:element name="totalAmount" type="xs:double"/>
+        <xs:element name="status" type="xs:string"/><xs:element name="paymentClientSecret" type="xs:string" minOccurs="0"/>
+      </xs:sequence></xs:complexType></xs:element>
+
+      <xs:element name="GetFoodOrderStatusRequest"><xs:complexType><xs:sequence><xs:element name="orderId" type="xs:string"/></xs:sequence></xs:complexType></xs:element>
+      <xs:element name="GetFoodOrderStatusResponse"><xs:complexType><xs:sequence>
+        <xs:element name="orderStatus" type="xs:string"/><xs:element name="deliveryStation" type="xs:string"/>
+        <xs:element name="estimatedDeliveryTime" type="xs:string"/>
+      </xs:sequence></xs:complexType></xs:element>
+
+      <xs:element name="CancelFoodOrderRequest"><xs:complexType><xs:sequence><xs:element name="orderId" type="xs:string"/></xs:sequence></xs:complexType></xs:element>
+      <xs:element name="CancelFoodOrderResponse"><xs:complexType><xs:sequence>
+        <xs:element name="refundAmount" type="xs:double"/><xs:element name="orderStatus" type="xs:string"/>
+      </xs:sequence></xs:complexType></xs:element>
+
+      <!-- tracking -->
+      <xs:element name="TrackTrainRequest"><xs:complexType><xs:sequence>
+        <xs:element name="trainNumber" type="xs:string"/><xs:element name="travelDate" type="xs:string"/>
+      </xs:sequence></xs:complexType></xs:element>
+      <xs:element name="TrackTrainResponse"><xs:complexType><xs:sequence>
+        <xs:element name="currentLocation" type="xs:string"/><xs:element name="nextStation" type="xs:string"/>
+        <xs:element name="delayMinutes" type="xs:int"/><xs:element name="speed" type="xs:double"/>
+      </xs:sequence></xs:complexType></xs:element>
+
+      <xs:element name="GetTrainLiveStatusRequest"><xs:complexType><xs:sequence><xs:element name="trainNumber" type="xs:string"/></xs:sequence></xs:complexType></xs:element>
+      <xs:element name="GetTrainLiveStatusResponse"><xs:complexType><xs:sequence>
+        <xs:element name="trainStatus" type="xs:string"/><xs:element name="currentStation" type="xs:string"/>
+        <xs:element name="expectedArrival" type="xs:string"/>
+      </xs:sequence></xs:complexType></xs:element>
+
+      <xs:element name="GetTrainScheduleRequest"><xs:complexType><xs:sequence><xs:element name="trainNumber" type="xs:string"/></xs:sequence></xs:complexType></xs:element>
+      <xs:element name="GetTrainScheduleResponse"><xs:complexType><xs:sequence>
+        <xs:element name="stations" type="tns:Station" maxOccurs="unbounded"/>
+      </xs:sequence></xs:complexType></xs:element>
+
+      <!-- upgrade -->
+      <xs:element name="RequestSeatUpgradeRequest"><xs:complexType><xs:sequence>
+        <xs:element name="pnr" type="xs:string"/><xs:element name="preferredClass" type="xs:string"/>
+      </xs:sequence></xs:complexType></xs:element>
+      <xs:element name="RequestSeatUpgradeResponse"><xs:complexType><xs:sequence>
+        <xs:element name="requestId" type="xs:string"/><xs:element name="status" type="xs:string"/>
+      </xs:sequence></xs:complexType></xs:element>
+
+      <xs:element name="GetUpgradeStatusRequest"><xs:complexType><xs:sequence><xs:element name="requestId" type="xs:string"/></xs:sequence></xs:complexType></xs:element>
+      <xs:element name="GetUpgradeStatusResponse"><xs:complexType><xs:sequence>
+        <xs:element name="upgradedClass" type="xs:string" minOccurs="0"/><xs:element name="status" type="xs:string"/>
+      </xs:sequence></xs:complexType></xs:element>
+
+      <!-- alerts -->
+      <xs:element name="SubscribeJourneyAlertsRequest"><xs:complexType><xs:sequence><xs:element name="pnr" type="xs:string"/></xs:sequence></xs:complexType></xs:element>
+      <xs:element name="SubscribeJourneyAlertsResponse"><xs:complexType><xs:sequence><xs:element name="status" type="xs:string"/></xs:sequence></xs:complexType></xs:element>
+      <xs:element name="UnsubscribeJourneyAlertsRequest"><xs:complexType><xs:sequence><xs:element name="pnr" type="xs:string"/></xs:sequence></xs:complexType></xs:element>
+      <xs:element name="UnsubscribeJourneyAlertsResponse"><xs:complexType><xs:sequence><xs:element name="status" type="xs:string"/></xs:sequence></xs:complexType></xs:element>
+    </xs:schema>
+  </wsdl:types>
+
+  <!-- messages -->
+  <wsdl:message name="BookingFaultMessage"><wsdl:part name="fault" element="tns:BookingFault"/></wsdl:message>
+  <wsdl:message name="searchTrainsIn"><wsdl:part name="parameters" element="tns:SearchTrainsRequest"/></wsdl:message>
+  <wsdl:message name="searchTrainsOut"><wsdl:part name="parameters" element="tns:SearchTrainsResponse"/></wsdl:message>
+  <wsdl:message name="checkSeatAvailabilityIn"><wsdl:part name="parameters" element="tns:CheckSeatAvailabilityRequest"/></wsdl:message>
+  <wsdl:message name="checkSeatAvailabilityOut"><wsdl:part name="parameters" element="tns:CheckSeatAvailabilityResponse"/></wsdl:message>
+  <wsdl:message name="bookTicketIn"><wsdl:part name="parameters" element="tns:BookTicketRequest"/></wsdl:message>
+  <wsdl:message name="bookTicketOut"><wsdl:part name="parameters" element="tns:BookTicketResponse"/></wsdl:message>
+  <wsdl:message name="cancelTicketIn"><wsdl:part name="parameters" element="tns:CancelTicketRequest"/></wsdl:message>
+  <wsdl:message name="cancelTicketOut"><wsdl:part name="parameters" element="tns:CancelTicketResponse"/></wsdl:message>
+  <wsdl:message name="getPNRStatusIn"><wsdl:part name="parameters" element="tns:GetPNRStatusRequest"/></wsdl:message>
+  <wsdl:message name="getPNRStatusOut"><wsdl:part name="parameters" element="tns:GetPNRStatusResponse"/></wsdl:message>
+  <wsdl:message name="getRefundDetailsIn"><wsdl:part name="parameters" element="tns:GetRefundDetailsRequest"/></wsdl:message>
+  <wsdl:message name="getRefundDetailsOut"><wsdl:part name="parameters" element="tns:GetRefundDetailsResponse"/></wsdl:message>
+  <wsdl:message name="rescheduleTicketIn"><wsdl:part name="parameters" element="tns:RescheduleTicketRequest"/></wsdl:message>
+  <wsdl:message name="rescheduleTicketOut"><wsdl:part name="parameters" element="tns:RescheduleTicketResponse"/></wsdl:message>
+  <wsdl:message name="orderFoodIn"><wsdl:part name="parameters" element="tns:OrderFoodRequest"/></wsdl:message>
+  <wsdl:message name="orderFoodOut"><wsdl:part name="parameters" element="tns:OrderFoodResponse"/></wsdl:message>
+  <wsdl:message name="getFoodOrderStatusIn"><wsdl:part name="parameters" element="tns:GetFoodOrderStatusRequest"/></wsdl:message>
+  <wsdl:message name="getFoodOrderStatusOut"><wsdl:part name="parameters" element="tns:GetFoodOrderStatusResponse"/></wsdl:message>
+  <wsdl:message name="cancelFoodOrderIn"><wsdl:part name="parameters" element="tns:CancelFoodOrderRequest"/></wsdl:message>
+  <wsdl:message name="cancelFoodOrderOut"><wsdl:part name="parameters" element="tns:CancelFoodOrderResponse"/></wsdl:message>
+  <wsdl:message name="trackTrainIn"><wsdl:part name="parameters" element="tns:TrackTrainRequest"/></wsdl:message>
+  <wsdl:message name="trackTrainOut"><wsdl:part name="parameters" element="tns:TrackTrainResponse"/></wsdl:message>
+  <wsdl:message name="getTrainLiveStatusIn"><wsdl:part name="parameters" element="tns:GetTrainLiveStatusRequest"/></wsdl:message>
+  <wsdl:message name="getTrainLiveStatusOut"><wsdl:part name="parameters" element="tns:GetTrainLiveStatusResponse"/></wsdl:message>
+  <wsdl:message name="getTrainScheduleIn"><wsdl:part name="parameters" element="tns:GetTrainScheduleRequest"/></wsdl:message>
+  <wsdl:message name="getTrainScheduleOut"><wsdl:part name="parameters" element="tns:GetTrainScheduleResponse"/></wsdl:message>
+  <wsdl:message name="requestSeatUpgradeIn"><wsdl:part name="parameters" element="tns:RequestSeatUpgradeRequest"/></wsdl:message>
+  <wsdl:message name="requestSeatUpgradeOut"><wsdl:part name="parameters" element="tns:RequestSeatUpgradeResponse"/></wsdl:message>
+  <wsdl:message name="getUpgradeStatusIn"><wsdl:part name="parameters" element="tns:GetUpgradeStatusRequest"/></wsdl:message>
+  <wsdl:message name="getUpgradeStatusOut"><wsdl:part name="parameters" element="tns:GetUpgradeStatusResponse"/></wsdl:message>
+  <wsdl:message name="subscribeJourneyAlertsIn"><wsdl:part name="parameters" element="tns:SubscribeJourneyAlertsRequest"/></wsdl:message>
+  <wsdl:message name="subscribeJourneyAlertsOut"><wsdl:part name="parameters" element="tns:SubscribeJourneyAlertsResponse"/></wsdl:message>
+  <wsdl:message name="unsubscribeJourneyAlertsIn"><wsdl:part name="parameters" element="tns:UnsubscribeJourneyAlertsRequest"/></wsdl:message>
+  <wsdl:message name="unsubscribeJourneyAlertsOut"><wsdl:part name="parameters" element="tns:UnsubscribeJourneyAlertsResponse"/></wsdl:message>
+
+  <wsdl:portType name="RailwayPort">
+    <wsdl:operation name="searchTrains"><wsdl:input message="tns:searchTrainsIn"/><wsdl:output message="tns:searchTrainsOut"/><wsdl:fault name="BookingFault" message="tns:BookingFaultMessage"/></wsdl:operation>
+    <wsdl:operation name="checkSeatAvailability"><wsdl:input message="tns:checkSeatAvailabilityIn"/><wsdl:output message="tns:checkSeatAvailabilityOut"/><wsdl:fault name="BookingFault" message="tns:BookingFaultMessage"/></wsdl:operation>
+    <wsdl:operation name="bookTicket"><wsdl:input message="tns:bookTicketIn"/><wsdl:output message="tns:bookTicketOut"/><wsdl:fault name="BookingFault" message="tns:BookingFaultMessage"/></wsdl:operation>
+    <wsdl:operation name="cancelTicket"><wsdl:input message="tns:cancelTicketIn"/><wsdl:output message="tns:cancelTicketOut"/><wsdl:fault name="BookingFault" message="tns:BookingFaultMessage"/></wsdl:operation>
+    <wsdl:operation name="getPNRStatus"><wsdl:input message="tns:getPNRStatusIn"/><wsdl:output message="tns:getPNRStatusOut"/><wsdl:fault name="BookingFault" message="tns:BookingFaultMessage"/></wsdl:operation>
+    <wsdl:operation name="getRefundDetails"><wsdl:input message="tns:getRefundDetailsIn"/><wsdl:output message="tns:getRefundDetailsOut"/><wsdl:fault name="BookingFault" message="tns:BookingFaultMessage"/></wsdl:operation>
+    <wsdl:operation name="rescheduleTicket"><wsdl:input message="tns:rescheduleTicketIn"/><wsdl:output message="tns:rescheduleTicketOut"/><wsdl:fault name="BookingFault" message="tns:BookingFaultMessage"/></wsdl:operation>
+    <wsdl:operation name="orderFood"><wsdl:input message="tns:orderFoodIn"/><wsdl:output message="tns:orderFoodOut"/><wsdl:fault name="BookingFault" message="tns:BookingFaultMessage"/></wsdl:operation>
+    <wsdl:operation name="getFoodOrderStatus"><wsdl:input message="tns:getFoodOrderStatusIn"/><wsdl:output message="tns:getFoodOrderStatusOut"/><wsdl:fault name="BookingFault" message="tns:BookingFaultMessage"/></wsdl:operation>
+    <wsdl:operation name="cancelFoodOrder"><wsdl:input message="tns:cancelFoodOrderIn"/><wsdl:output message="tns:cancelFoodOrderOut"/><wsdl:fault name="BookingFault" message="tns:BookingFaultMessage"/></wsdl:operation>
+    <wsdl:operation name="trackTrain"><wsdl:input message="tns:trackTrainIn"/><wsdl:output message="tns:trackTrainOut"/><wsdl:fault name="BookingFault" message="tns:BookingFaultMessage"/></wsdl:operation>
+    <wsdl:operation name="getTrainLiveStatus"><wsdl:input message="tns:getTrainLiveStatusIn"/><wsdl:output message="tns:getTrainLiveStatusOut"/><wsdl:fault name="BookingFault" message="tns:BookingFaultMessage"/></wsdl:operation>
+    <wsdl:operation name="getTrainSchedule"><wsdl:input message="tns:getTrainScheduleIn"/><wsdl:output message="tns:getTrainScheduleOut"/><wsdl:fault name="BookingFault" message="tns:BookingFaultMessage"/></wsdl:operation>
+    <wsdl:operation name="requestSeatUpgrade"><wsdl:input message="tns:requestSeatUpgradeIn"/><wsdl:output message="tns:requestSeatUpgradeOut"/><wsdl:fault name="BookingFault" message="tns:BookingFaultMessage"/></wsdl:operation>
+    <wsdl:operation name="getUpgradeStatus"><wsdl:input message="tns:getUpgradeStatusIn"/><wsdl:output message="tns:getUpgradeStatusOut"/><wsdl:fault name="BookingFault" message="tns:BookingFaultMessage"/></wsdl:operation>
+    <wsdl:operation name="subscribeJourneyAlerts"><wsdl:input message="tns:subscribeJourneyAlertsIn"/><wsdl:output message="tns:subscribeJourneyAlertsOut"/><wsdl:fault name="BookingFault" message="tns:BookingFaultMessage"/></wsdl:operation>
+    <wsdl:operation name="unsubscribeJourneyAlerts"><wsdl:input message="tns:unsubscribeJourneyAlertsIn"/><wsdl:output message="tns:unsubscribeJourneyAlertsOut"/><wsdl:fault name="BookingFault" message="tns:BookingFaultMessage"/></wsdl:operation>
+  </wsdl:portType>
+
+  <wsdl:binding name="RailwayBinding" type="tns:RailwayPort">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="searchTrains"><soap:operation soapAction="searchTrains"/><wsdl:input><soap:body use="literal"/></wsdl:input><wsdl:output><soap:body use="literal"/></wsdl:output><wsdl:fault name="BookingFault"><soap:fault name="BookingFault" use="literal"/></wsdl:fault></wsdl:operation>
+    <wsdl:operation name="checkSeatAvailability"><soap:operation soapAction="checkSeatAvailability"/><wsdl:input><soap:body use="literal"/></wsdl:input><wsdl:output><soap:body use="literal"/></wsdl:output><wsdl:fault name="BookingFault"><soap:fault name="BookingFault" use="literal"/></wsdl:fault></wsdl:operation>
+    <wsdl:operation name="bookTicket"><soap:operation soapAction="bookTicket"/><wsdl:input><soap:body use="literal"/></wsdl:input><wsdl:output><soap:body use="literal"/></wsdl:output><wsdl:fault name="BookingFault"><soap:fault name="BookingFault" use="literal"/></wsdl:fault></wsdl:operation>
+    <wsdl:operation name="cancelTicket"><soap:operation soapAction="cancelTicket"/><wsdl:input><soap:body use="literal"/></wsdl:input><wsdl:output><soap:body use="literal"/></wsdl:output><wsdl:fault name="BookingFault"><soap:fault name="BookingFault" use="literal"/></wsdl:fault></wsdl:operation>
+    <wsdl:operation name="getPNRStatus"><soap:operation soapAction="getPNRStatus"/><wsdl:input><soap:body use="literal"/></wsdl:input><wsdl:output><soap:body use="literal"/></wsdl:output><wsdl:fault name="BookingFault"><soap:fault name="BookingFault" use="literal"/></wsdl:fault></wsdl:operation>
+    <wsdl:operation name="getRefundDetails"><soap:operation soapAction="getRefundDetails"/><wsdl:input><soap:body use="literal"/></wsdl:input><wsdl:output><soap:body use="literal"/></wsdl:output><wsdl:fault name="BookingFault"><soap:fault name="BookingFault" use="literal"/></wsdl:fault></wsdl:operation>
+    <wsdl:operation name="rescheduleTicket"><soap:operation soapAction="rescheduleTicket"/><wsdl:input><soap:body use="literal"/></wsdl:input><wsdl:output><soap:body use="literal"/></wsdl:output><wsdl:fault name="BookingFault"><soap:fault name="BookingFault" use="literal"/></wsdl:fault></wsdl:operation>
+    <wsdl:operation name="orderFood"><soap:operation soapAction="orderFood"/><wsdl:input><soap:body use="literal"/></wsdl:input><wsdl:output><soap:body use="literal"/></wsdl:output><wsdl:fault name="BookingFault"><soap:fault name="BookingFault" use="literal"/></wsdl:fault></wsdl:operation>
+    <wsdl:operation name="getFoodOrderStatus"><soap:operation soapAction="getFoodOrderStatus"/><wsdl:input><soap:body use="literal"/></wsdl:input><wsdl:output><soap:body use="literal"/></wsdl:output><wsdl:fault name="BookingFault"><soap:fault name="BookingFault" use="literal"/></wsdl:fault></wsdl:operation>
+    <wsdl:operation name="cancelFoodOrder"><soap:operation soapAction="cancelFoodOrder"/><wsdl:input><soap:body use="literal"/></wsdl:input><wsdl:output><soap:body use="literal"/></wsdl:output><wsdl:fault name="BookingFault"><soap:fault name="BookingFault" use="literal"/></wsdl:fault></wsdl:operation>
+    <wsdl:operation name="trackTrain"><soap:operation soapAction="trackTrain"/><wsdl:input><soap:body use="literal"/></wsdl:input><wsdl:output><soap:body use="literal"/></wsdl:output><wsdl:fault name="BookingFault"><soap:fault name="BookingFault" use="literal"/></wsdl:fault></wsdl:operation>
+    <wsdl:operation name="getTrainLiveStatus"><soap:operation soapAction="getTrainLiveStatus"/><wsdl:input><soap:body use="literal"/></wsdl:input><wsdl:output><soap:body use="literal"/></wsdl:output><wsdl:fault name="BookingFault"><soap:fault name="BookingFault" use="literal"/></wsdl:fault></wsdl:operation>
+    <wsdl:operation name="getTrainSchedule"><soap:operation soapAction="getTrainSchedule"/><wsdl:input><soap:body use="literal"/></wsdl:input><wsdl:output><soap:body use="literal"/></wsdl:output><wsdl:fault name="BookingFault"><soap:fault name="BookingFault" use="literal"/></wsdl:fault></wsdl:operation>
+    <wsdl:operation name="requestSeatUpgrade"><soap:operation soapAction="requestSeatUpgrade"/><wsdl:input><soap:body use="literal"/></wsdl:input><wsdl:output><soap:body use="literal"/></wsdl:output><wsdl:fault name="BookingFault"><soap:fault name="BookingFault" use="literal"/></wsdl:fault></wsdl:operation>
+    <wsdl:operation name="getUpgradeStatus"><soap:operation soapAction="getUpgradeStatus"/><wsdl:input><soap:body use="literal"/></wsdl:input><wsdl:output><soap:body use="literal"/></wsdl:output><wsdl:fault name="BookingFault"><soap:fault name="BookingFault" use="literal"/></wsdl:fault></wsdl:operation>
+    <wsdl:operation name="subscribeJourneyAlerts"><soap:operation soapAction="subscribeJourneyAlerts"/><wsdl:input><soap:body use="literal"/></wsdl:input><wsdl:output><soap:body use="literal"/></wsdl:output><wsdl:fault name="BookingFault"><soap:fault name="BookingFault" use="literal"/></wsdl:fault></wsdl:operation>
+    <wsdl:operation name="unsubscribeJourneyAlerts"><soap:operation soapAction="unsubscribeJourneyAlerts"/><wsdl:input><soap:body use="literal"/></wsdl:input><wsdl:output><soap:body use="literal"/></wsdl:output><wsdl:fault name="BookingFault"><soap:fault name="BookingFault" use="literal"/></wsdl:fault></wsdl:operation>
+  </wsdl:binding>
+
+  <wsdl:service name="RailwayService">
+    <wsdl:port name="RailwayPort" binding="tns:RailwayBinding">
+      <soap:address location="http://localhost:8080/ws/booking"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>
